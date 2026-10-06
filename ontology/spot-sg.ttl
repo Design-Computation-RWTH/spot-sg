@@ -1,0 +1,73 @@
+@prefix spot-sg: <https://w3id.org/spot/sg#> .
+@prefix spot: <https://w3id.org/spot#> .
+@prefix gom: <https://w3id.org/gom#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix voaf: <http://purl.org/vocommons/voaf#> .
+@prefix schema: <http://schema.org/> .
+
+<https://w3id.org/spot/sg> a owl:Ontology ;
+    rdfs:label "SPOT-Scene Graph Extension"@en ;
+    dcterms:abstract "Extension of the Space Types Ontology (SPOT) for quantitative spatial descriptions. It aligns SPOT with the Geometry Metadata Ontology (GOM), so that spaces can be read as coordinate systems and appearances as transformations between them, forming a scene graph. This enables quantitative location descriptions: the position of a space within another space can be stated and computed numerically. It also adds a compact bounding box for spaces."@en ;
+    owl:imports <https://w3id.org/spot/> ;
+    owl:imports <https://w3id.org/gom> ;
+    voaf:extends <https://w3id.org/spot/> ;
+    dcterms:created "2026-10-06"^^xsd:date ;
+    dcterms:modified "2026-10-06"^^xsd:date ;
+    dcterms:issued "2026-10-06"^^xsd:date ;
+    dcterms:bibliographicCitation "Schulz, O. (2026, October 6). SPOT Scene Graph (Version 1.0.0) [Ontology]. Design Computation, RWTH Aachen University. https://w3id.org/spot/sg"@en ;
+    dcterms:creator [
+        a schema:Person ;
+        schema:name "Oliver Schulz" ;
+        schema:url "https://dc.rwth-aachen.de/oliver-schulz/" ;
+        schema:affiliation [
+            a schema:Organization ;
+            schema:name "Design Computation, RWTH Aachen University" ;
+            schema:url "https://dc.rwth-aachen.de/"
+        ]
+    ] ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:title "SPOT Scene Graph"@en ;
+    vann:preferredNamespacePrefix "spot-sg" ;
+    vann:preferredNamespaceUri <https://w3id.org/spot/sg#> ;
+    owl:versionInfo "1.0.0" .
+
+# Declarations of the reused SPOT and GOM terms, so that the file can be read without resolving its imports.
+spot:Space a owl:Class .
+spot:EntitySpace a owl:Class .
+spot:Appearance a owl:Class .
+gom:CartesianCoordinateSystem a owl:Class .
+gom:AffineCoordinateSystemTransformation a owl:Class .
+
+spot:appearsIn a owl:ObjectProperty .
+spot:hasAppearance a owl:ObjectProperty .
+gom:toCoordinateSystem a owl:ObjectProperty .
+gom:fromCoordinateSystem a owl:ObjectProperty .
+
+spot:Space rdfs:subClassOf gom:CartesianCoordinateSystem .
+
+spot:Appearance rdfs:subClassOf gom:AffineCoordinateSystemTransformation .
+
+spot:appearsIn rdfs:subPropertyOf gom:toCoordinateSystem .
+
+spot-sg:isAppearanceOf a owl:ObjectProperty ;
+    rdfs:label "is appearance of"@en ;
+    rdfs:comment """Inverse of spot:hasAppearance. This relates an Appearance to the spot:EntitySpace that it positions. It is declared as a subproperty of gom:fromCoordinateSystem so that the source coordinate system of the transformation is inferred automatically from SPOT's hasAppearance relationship. The main purpose of this property is to bridge SPOT's hasAppearance to GOM's fromCoordinateSystem via the inverse and the subproperty pattern. It is not mandatory to assert this property in the ABox, as it is inferred from spot:hasAppearance."""@en ;
+    rdfs:domain spot:Appearance ;
+    rdfs:range spot:EntitySpace ;
+    owl:inverseOf spot:hasAppearance ;
+    rdfs:subPropertyOf gom:fromCoordinateSystem .
+
+spot-sg:boundingBoxArray a rdfs:Datatype ;
+    rdfs:label "bounding box array"@en ;
+    rdfs:comment """ An array literal encoding a bounding box in the local coordinate system of a Space. It uses a fixed 6-element structure with [minX, minY, minZ, maxX, maxY, maxZ] to ensure consistent parsing regardless of dimensionality. For 2D spaces, an axis value can be set to 0. The units are those of the Space's local coordinate system and may vary across different spaces."""@en .
+
+spot-sg:hasBoundingBox a owl:DatatypeProperty ;
+    rdfs:label "has bounding box"@en ;
+    rdfs:comment """Relates a Space to its bounding box in the Space's local coordinate system, encoded as a spot-sg:boundingBoxArray literal."""@en ;
+    rdfs:domain spot:Space ;
+    rdfs:range spot-sg:boundingBoxArray .

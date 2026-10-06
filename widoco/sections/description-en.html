@@ -1,0 +1,69 @@
+<h2 id="desc" class="list">SPOT-SG Ontology: Description <span class="backlink"> back to <a href="#toc">ToC</a></span></h2>
+<!-- DRAFT: restructured from the rdfs:comment of the ontology; check against thesis chapter -->
+
+<!-- Loaded only in dark mode (follows the page's dark-mode toggle): flips the figure's black lines and text to light -->
+<link rel="stylesheet" href="assets/figure-dark.css" media="(prefers-color-scheme: dark)"/>
+<div align="center">
+<figure id="fig-alignment">
+<img class="invert-in-dark" src="assets/spot-sg-alignment.excalidraw.svg" alt="Example of the SPOT-SG alignment: a Damage entity space, its appearance and a Floor Plan space, with the GOM classes and properties inferred through SPOT-SG" style="max-width:100%;height:auto;" />
+<figcaption><a href="#fig-alignment">Figure 1</a>: ABox example of the alignment of SPOT and GOM: a damage (EntitySpace) positioned in a floor plan (EntitySpace).</figcaption>
+</figure>
+</div>
+
+<h3>Spaces as coordinate systems</h3>
+<p>
+Every <code>spot:Space</code> is a <code>gom:CartesianCoordinateSystem</code>. Every Space instance (Physical or Virtual) defines a local coordinate system with an origin and axes. The Physical/Virtual distinction concerns real-world mappability (metric groundability), not the existence of a coordinate system. Two-dimensional spaces are treated as degenerate 3D spaces where the corresponding third axis exists but is constrained to zero. The alignment is declared on the abstract superclass <code>spot:Space</code>, so it covers the entire Space hierarchy.
+</p>
+<p>
+<b>Note on units:</b> The length unit of a Space is declared with <code>qudt:hasUnit</code>, using units from the QUDT vocabulary such as <code>unit:M</code> or <code>unit:PIXEL</code>. Units without a fixed physical length, such as pixels, are adopted into the reference space at a ratio of 1:1; the actual ratio is carried by the transformation matrix of the Appearance. The same Space can therefore appear at different scales in different reference spaces. A unit MUST NOT be assumed when none is declared: GOM's default of metre does not hold for SPOT spaces, since DocumentSpaces may use pixel coordinates.
+</p>
+
+<h3>Appearances as coordinate system transformations</h3>
+<p>
+Every <code>spot:Appearance</code> is a <code>gom:AffineCoordinateSystemTransformation</code>. An Appearance describes how an EntitySpace is positioned within a reference space. This allows <code>gom:fromCoordinateSystem</code>, <code>gom:toCoordinateSystem</code> and <code>gom:hasTransformationMatrix</code> to apply directly to Appearance nodes. This holds for every Appearance regardless of the type of the reference space, so the alignment is declared on the abstract superclass <code>spot:Appearance</code>.
+</p>
+
+<h3>Property alignment</h3>
+<ul>
+<li><code>spot:appearsIn</code> is a subproperty of <code>gom:toCoordinateSystem</code>.</li>
+<li><code>spot-sg:isAppearanceOf</code> is the inverse of <code>spot:hasAppearance</code> and a subproperty of <code>gom:fromCoordinateSystem</code>.</li>
+</ul>
+<p>
+Together, a complete GOM transformation pattern is derivable from standard SPOT instance data. Only the transformation matrix itself has to be asserted. For the example in <a href="#fig-alignment">Figure 1</a>, the asserted data is:
+</p>
+
+<pre><code>ex:Damage a spot:EntitySpace ;
+    spot:hasAssetAppearance ex:DamageAppearance .
+
+ex:DamageAppearance a spot:EntityAppearance ;
+    spot:appearsIn ex:FloorPlan ;
+    gom:hasTransformationMatrix "[1,0,0,0, 0,1,0,0, 0,0,1,0, 0.21,-0.65,0,1]"^^gom:columnMajorArray .
+
+ex:FloorPlan a spot:EntitySpace .</code></pre>
+
+<p>From this, it may be inferred:</p>
+<pre><code>ex:Damage a gom:CartesianCoordinateSystem .
+ex:FloorPlan a gom:CartesianCoordinateSystem .
+ex:DamageAppearance a gom:AffineCoordinateSystemTransformation .
+
+ex:Damage spot:hasAppearance ex:DamageAppearance .              # hasAssetAppearance is a subproperty
+ex:DamageAppearance spot-sg:isAppearanceOf ex:Damage .          # inverse of hasAppearance
+ex:DamageAppearance gom:fromCoordinateSystem ex:Damage .        # via isAppearanceOf
+ex:DamageAppearance gom:toCoordinateSystem ex:FloorPlan .       # via appearsIn</code></pre>
+
+<h3>Single-use Appearances</h3>
+<p>
+Each Appearance links exactly one source space to exactly one target space, as <code>gom:fromCoordinateSystem</code> and <code>gom:toCoordinateSystem</code> are functional properties. An Appearance must therefore not be shared by multiple spaces, even if their transformations are identical: a reasoner would otherwise infer that the spaces involved are identical (<code>owl:sameAs</code>). A space that appears in several places gets its own Appearance for each of them.
+</p>
+
+<h3>Bounding box</h3>
+<p>
+<code>spot-sg:hasBoundingBox</code> relates a Space to its bounding box in the Space's local coordinate system, encoded as a <code>spot-sg:boundingBoxArray</code> literal: an array with exactly six elements:
+</p>
+<pre><code>[minX, minY, minZ, maxX, maxY, maxZ]</code></pre>
+<p>
+For a two-dimensional Space, the minimum and maximum value of one axis are set to 0. Which axis that is depends on the Space and is not restricted to Z.
+</p>
+<p>
+Units are those of the Space's local coordinate system and are therefore heterogeneous across a dataset. Meaningful spatial comparison requires unit resolution and transformation matrix application on the client side.
+</p>

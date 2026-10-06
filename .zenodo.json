@@ -1,0 +1,40 @@
+{
+  "title": "SPOT Scene Graph (SPOT-SG)",
+  "description": "Extension of the Space Types Ontology (SPOT) for quantitative spatial descriptions. It aligns SPOT with the Geometry Metadata Ontology (GOM), so that spaces can be read as coordinate systems and appearances as transformations between them, forming a scene graph. This enables quantitative location descriptions: the position of a space within another space can be stated and computed numerically. It also adds a compact bounding box for spaces.",
+  "upload_type": "dataset",
+  "access_right": "open",
+  "license": "cc-by-4.0",
+  "creators": [
+    {
+      "name": "Schulz, Oliver",
+      "affiliation": "Design Computation, RWTH Aachen University"
+    }
+  ],
+  "keywords": [
+    "ontology",
+    "Linked Building Data",
+    "SPOT",
+    "scene graph",
+    "coordinate systems",
+    "spatial linking",
+    "BIM",
+    "semantic web"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://w3id.org/spot/sg",
+      "relation": "isIdenticalTo",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://w3id.org/spot/",
+      "relation": "isSupplementTo",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://w3id.org/gom",
+      "relation": "references",
+      "resource_type": "dataset"
+    }
+  ]
+}
